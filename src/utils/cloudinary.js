@@ -11,6 +11,7 @@ cloudinary.config({
 //   Steps Multer accepst the File Thing From the FORM AND GIVES PATH TO THE CLODINARY 
 //  STEP2 CLOUDINARY TAKE STHE PATH UPLOAD THE FILE CLOUDINARY 
 //  STEP3 AFTER UPLOADING FILE TO CLOUD DELETE IT FROM THE SERVER
+//  Here inside Async You will get the Paramater filepath
 const UploadFiletoCloud=async(filepath)=>{
     try {
         if(!filepath){
