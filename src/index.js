@@ -6,36 +6,16 @@ import dotenv from "dotenv";
 //  Since we are Using the environmnt Variables IN MANY THINGS IN FILE STRUCTURE HENCE ITS GOOD TO
 //  USE THE DOT ENV
 import { app } from "./app.js";
-import cors from "cors";
-import cookieParser from "cookie-parser";
+
 import express from "express";
 import ConnectDB from "./db/index.js";
 dotenv.config({ path: "./env" });
 
-app.use(
-  cors({
-    origin: process.env.CORS_ORIGIN,
-  }),
-);
-
-// like reciving the Data in JSON FORMAT
-//  Here these is Middleware where we atelli9ng if the data comes trough json make it in redble format
-app.use(express.json({ limit: "16kb" }));
-
-//  IF ANY CONTENT TYPE IS URL THING THEN USE THESE MIDDLEWARE
-app.use(express.urlencoded({extended:true}))
-
-//  Sometimes we will get the Response in the PDF FORMAT OR FILE FORMAT IN THAT CASE YU NED TO 
-// STORE IT MANUALLY
-app.use(express.static('public'))
-
-//  usage of the cookie parser
-app.use(cookieParser())
 
 ConnectDB()
   .then(() => {
     app.listen(process.env.PORT || 8000, () => {
-      console.log("db connected succlefully server also runnubg");
+      console.log("db connected succlefully server also runnubg in ");
     });
   })
   .catch((e) => {

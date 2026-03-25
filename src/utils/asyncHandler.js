@@ -4,7 +4,7 @@
 
 //  This is the Method Two Where i can actually Do Plenty of Things 
 const asyncHandler=(requesthandler)=>{
-    (res,req,next)=>{
+   return (req,res,next)=>{
      Promise
      .resolve(requesthandler(req,res,next))
      .catch((e)=>
@@ -15,7 +15,7 @@ const asyncHandler=(requesthandler)=>{
     }
 }
 
-
+export {asyncHandler}
 // This is the Method One 
 
 // const asyncHandler = (fn) => async (req,res, next) => {
