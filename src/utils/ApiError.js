@@ -3,6 +3,7 @@
 //  these here Errro is Predefined Class
 class ApiError extends Error{
     constructor(statusCode,message="SomeThing Went Wrong",errors=[],STACK=""){
+      super(message)
         this.statusCode=statusCode,
         this.message=message,
         this.data=null

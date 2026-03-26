@@ -1,10 +1,84 @@
 // contollers Acceps the Request from the cleint proceess the Data and also sends Specific Data
 import { asyncHandler } from "../utils/asyncHandler.js";
+import { ApiError } from "../utils/ApiError.js";
+import { User } from "../models/user.model.js";
+import { UploadFiletoCloud } from "../utils/cloudinary.js";
+const register = asyncHandler(async (req, res, next) => {
+  //    res.status(200).json({
+  //         message:"Ok"
+  //     })
+  //  Here we will try to Register the User based on the  Given Data That User Provides us
 
-const register=asyncHandler(async(req,res,next)=>{
-   res.status(200).json({
-        message:"Ok"
-    })
-})
+  //  Step 1 get the user Details like what and all we defined in the UsermodelSchema
+  //  Step2 Validation Like user as not left any required field Empty
+  //  Step3 Check whether the User Already Exists Or not
+  //  Check for the Files Since we are Accepting the Files Also
+  // Then Upload Them to Cloudinary
+  //  After uploading it onto the Cloudinary You will get the url as an response from the User
+  //  Now Store that url in the Database Thing
+  //  Aftr the User gets Created Then take data AND STORE IT INTO TO THE DATABASE
 
-export {register}
+  //  Step 1 How to the Data from the Frontend if a User is Sending data .. in FORM,JSON
+  // You can actually get the data by req.body
+  const { username, email, fullname, password } = req.body;
+  // checking whether we got the data or not
+  //  Here with the HELP OF POSTMAN YOU CAN ACTUALLY SEND AND VERIFY THE DATA
+  console.log("email", email);
+  //  STEP 2 IS FOR VALIDATION
+  // if(username=""){
+  //     //  API EROROR IS FILE WHCICH WE CREATED TO HANDLE THE ERRORS
+  //     throw new ApiError(400,"username is required",)
+  // }
+
+  //  Method 2 since i have many fields if i keep
+  //  Some is method like map which returns the true or false here since we ae checkin whether the
+  // any fileds or empty then we can actaulky send it
+  if (
+    [username, email, fullname, password].some((field) => field?.trim() === "")
+  ) {
+    //  IF ANY OF THE CONDITION TRUE THEN THROW ERROR
+    throw new ApiError(400, "All Fields Are Requiredd");
+  }
+
+  //  Now comes the Step 3 Important Validation Checking Whther user Exits then tell me to Signup
+  //  These Method tells whether the username and email exits or not
+  const ExistedUser = await User.findOne({
+    $or: [{ username }, { email }],
+  });
+  //    Here in Exited User You will get Null beuase findone checking in the DB
+  //   SInce we are not actually inserting anything into the DB WE WLL GET null
+  console.log("Existed user", ExistedUser);
+  if (ExistedUser) {
+    throw new ApiError(400, "User Already Exists");
+  }
+
+  //  Step 4 Here We will be Seeing How to Deal With the Files That When a User Uploads  it
+  //     User uploads file (Postman/frontend)
+  //         ↓
+  // Multer middleware
+  //         ↓
+  // req.file / req.files created
+  //         ↓
+  // You access file data
+  console.log("Files Are",Request.files);
+//   checks whether the req.files exists then onlytake up the avatar thing then if avatar Exits Then take
+//  the Path Without these File might crash if nay fields doent thier
+//  Here we are Getting path Becuase multer gives you the path using it you can actually upload it int the 
+//  cloudinary thing  
+ const AvatarImagePath= req.files?.avatar[0]?.path;
+//  cjeks the Cover Image
+ const CoverImagePath=req.files?.coverImage[0]?.path;
+    
+//  Step5   Checks Whether the avatar Image iS Present OR NOT 
+if(!AvatarImagePath){
+    throw new ApiError(400,"Avatar Iamge Not Uploaded")
+}
+
+});
+
+//  Step6 After Getting the Cover Image pload it int the Cloudnary
+//   Here Aftr uploading to cloudinary it will give you the URL 
+UploadFiletoCloud(AvatarImagePath)
+UploadFiletoCloud(CoverImagePath)
+
+export { register };
