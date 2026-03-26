@@ -50,7 +50,7 @@ const UserSchema = new Schema(
       //  These Array Structure can be used where ever i am using th Password
       required: [true, "Password IS Required"],
     },
-    AccessToken: {
+    RefreshToken: {
       type: String,
     },
   },
@@ -68,7 +68,7 @@ UserSchema.pre("save", async function (next) {
   // Here if the Password is Not Modilef then only We use
   // isModified used to Chwwck whether the Given Field Modified or not
   if (!this.isModified("Password")) return next();
-  this.Password = bcrpyt.hash(this.Password, 10);
+  this.Password = await bcrpyt.hash(this.Password, 10);
   next();
 });
 

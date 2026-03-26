@@ -3,6 +3,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { User } from "../models/user.model.js";
 import { UploadFiletoCloud } from "../utils/cloudinary.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
 const register = asyncHandler(async (req, res, next) => {
   //    res.status(200).json({
   //         message:"Ok"
@@ -60,25 +61,58 @@ const register = asyncHandler(async (req, res, next) => {
   // req.file / req.files created
   //         ↓
   // You access file data
-  console.log("Files Are",Request.files);
-//   checks whether the req.files exists then onlytake up the avatar thing then if avatar Exits Then take
-//  the Path Without these File might crash if nay fields doent thier
-//  Here we are Getting path Becuase multer gives you the path using it you can actually upload it int the 
-//  cloudinary thing  
- const AvatarImagePath= req.files?.avatar[0]?.path;
-//  cjeks the Cover Image
- const CoverImagePath=req.files?.coverImage[0]?.path;
-    
-//  Step5   Checks Whether the avatar Image iS Present OR NOT 
-if(!AvatarImagePath){
-    throw new ApiError(400,"Avatar Iamge Not Uploaded")
-}
+  console.log("Files Are", req.files);
+  //   checks whether the req.files exists then onlytake up the avatar thing then if avatar Exits Then take
+  //  the Path Without these File might crash if nay fields doent thier
+  //  Here we are Getting path Becuase multer gives you the path using it you can actually upload it int the
+  //  cloudinary thing
+  const AvatarImagePath = req.files?.avatar[0]?.path;
+  //  cjeks the Cover Image
+  const CoverImagePath = req.files?.coverImage[0]?.path;
 
+  //  Step5   Checks Whether the avatar Image iS Present OR NOT
+  if (!AvatarImagePath) {
+    throw new ApiError(400, "Avatar Iamge Not Uploaded");
+  }
+
+  //  Step6 After Getting the Cover Image pload it int the Cloudnary
+  //   Here Aftr uploading to cloudinary it will give you the URL
+  //  By using that url i will upload it oint o the DATABASE
+  const AvatarUrl = await UploadFiletoCloud(AvatarImagePath);
+  const CoverUrl = await UploadFiletoCloud(CoverImagePath);
+
+  if (!AvatarUrl) {
+    throw new ApiError(400, "Avatar Iamge Not Uploaded");
+  }
+
+  //  Now Comes The Most Important Part Making Entries into the Db
+  const UserFile = await User.create({
+    username,
+    email,
+    fullname,
+    password,
+    avatar: AvatarUrl.url,
+    //   Since i have Not Checked Whether Coverurl present here we will check whether CoverUrl is Present
+    //  then only get the CoverUrl?.url
+    coverImage: CoverUrl?.url || "",
+  });
+
+  //  After Each entry Mongodb Creates the id
+  //  After Making it Entry into the Db I nned to send Some Data Back into the Frontend
+  //  Except the Password Becuase if in response if the PASSWORD AND REFRESHTOKEN INCLUDED THEN IT WILL BE M
+  //  MORE  TRUOBLE
+  const UserDataToBeSent = await User.findById(UserFile._id).select(
+    "-password -RefreshToken",
+  );
+  if (!UserDataToBeSent) {
+    throw new ApiError(400, "No User Was Not Created");
+  }
+
+  //   We have Created one Resopnse thing Called  APIRESPONSE Which Basiclay Helps us to Send the Data
+
+  return res.status(201).json(
+    new ApiResponse(200,UserDataToBeSent,"User registration Sunccfull")
+  )
 });
-
-//  Step6 After Getting the Cover Image pload it int the Cloudnary
-//   Here Aftr uploading to cloudinary it will give you the URL 
-UploadFiletoCloud(AvatarImagePath)
-UploadFiletoCloud(CoverImagePath)
 
 export { register };
