@@ -9,7 +9,7 @@ const register = asyncHandler(async (req, res, next) => {
   //         message:"Ok"
   //     })
   //  Here we will try to Register the User based on the  Given Data That User Provides us
-
+//  kguyu
   //  Step 1 get the user Details like what and all we defined in the UsermodelSchema
   //  Step2 Validation Like user as not left any required field Empty
   //  Step3 Check whether the User Already Exists Or not
@@ -43,7 +43,7 @@ const register = asyncHandler(async (req, res, next) => {
 
   //  Now comes the Step 3 Important Validation Checking Whther user Exits then tell me to Signup
   //  These Method tells whether the username and email exits or not
-  const ExistedUser = await User.findOne({
+  const ExistedUser =User.findOne({
     $or: [{ username }, { email }],
   });
   //    Here in Exited User You will get Null beuase findone checking in the DB
@@ -61,7 +61,7 @@ const register = asyncHandler(async (req, res, next) => {
   // req.file / req.files created
   //         ↓
   // You access file data
-  console.log("Files Are", req.files);
+  console.log("Files Are", req.file);
   //   checks whether the req.files exists then onlytake up the avatar thing then if avatar Exits Then take
   //  the Path Without these File might crash if nay fields doent thier
   //  Here we are Getting path Becuase multer gives you the path using it you can actually upload it int the
