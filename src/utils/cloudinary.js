@@ -15,7 +15,7 @@ cloudinary.config({
 const UploadFiletoCloud=async(filepath)=>{
     try {
         if(!filepath){
-            return null
+            return " CLOUDINARY ISSUE 1"
         }
         // Step2 Upload the Cloudinaty
        const response=await cloudinary.uploader.upload(filepath,{
@@ -24,11 +24,21 @@ const UploadFiletoCloud=async(filepath)=>{
         })
         //  Step3 After uploading the File Store that one Variable Like RESPOSE
         //  AFTER THESE STORE THESE URL TO OUR DATABASE
-        console.log("Yes File Uploaded Succefully:",response.url);
-        return response
+        // console.log("Yes File Uploaded Succefully:",response.url);
+        
+        //  Here You Might e Wondering why do i Need to unlink the File Beuacse 
+        //  After MULTERS GIVES US THE PATH AND STORES IT IN A TEMAPORARAY FILE ITS OUR DUTY TO 
+        //  AFTER SUCCESSFULLY UPLOADING TO CLOUD AND GETTING URL ITS NESSECRY THAT WE ULINK THE FILE 
+        //  IN THE sENSE WE REMOVE THE fILE FROM LOCALSTORAGE
+        fs.unlinkSync(filepath)
+         return response
+        
     } catch (error) {
         fs.unlinkSync(filepath)
-        return null
+        console.log(error);
+        
+        // return null
+        return "Cloudinary Issue 3"
     }
 
 }

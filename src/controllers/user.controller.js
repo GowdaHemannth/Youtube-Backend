@@ -21,7 +21,7 @@ const register = asyncHandler(async (req, res, next) => {
 
   //  Step 1 How to the Data from the Frontend if a User is Sending data .. in FORM,JSON
   // You can actually get the data by req.body
-  const { username, email, fullname, password } = req.body;
+  const { username, email, fullname, Password } = req.body;
   // checking whether we got the data or not
   //  Here with the HELP OF POSTMAN YOU CAN ACTUALLY SEND AND VERIFY THE DATA
   console.log("email", email);
@@ -35,7 +35,7 @@ const register = asyncHandler(async (req, res, next) => {
   //  Some is method like map which returns the true or false here since we ae checkin whether the
   // any fileds or empty then we can actaulky send it
   if (
-    [username, email, fullname, password].some((field) => field?.trim() === "")
+    [username, email, fullname, Password].some((field) => field?.trim() === "")
   ) {
     //  IF ANY OF THE CONDITION TRUE THEN THROW ERROR
     throw new ApiError(400, "All Fields Are Requiredd");
@@ -43,7 +43,7 @@ const register = asyncHandler(async (req, res, next) => {
 
   //  Now comes the Step 3 Important Validation Checking Whther user Exits then tell me to Signup
   //  These Method tells whether the username and email exits or not
-  const ExistedUser =User.findOne({
+  const ExistedUser = await User.findOne({
     $or: [{ username }, { email }],
   });
   //    Here in Exited User You will get Null beuase findone checking in the DB
@@ -61,26 +61,33 @@ const register = asyncHandler(async (req, res, next) => {
   // req.file / req.files created
   //         ↓
   // You access file data
-  console.log("Files Are", req.file);
+  console.log("Files Are", req.files);
   //   checks whether the req.files exists then onlytake up the avatar thing then if avatar Exits Then take
   //  the Path Without these File might crash if nay fields doent thier
   //  Here we are Getting path Becuase multer gives you the path using it you can actually upload it int the
   //  cloudinary thing
-  const AvatarImagePath = req.files?.avatar[0]?.path;
+  const AvatarImagePath = req.files?.avatar?.[0]?.path;
   //  cjeks the Cover Image
-  const CoverImagePath = req.files?.coverImage[0]?.path;
+  const CoverImagePath = req.files?.coverImage?.[0]?.path;
 
   //  Step5   Checks Whether the avatar Image iS Present OR NOT
   if (!AvatarImagePath) {
-    throw new ApiError(400, "Avatar Iamge Not Uploaded");
+    throw new ApiError(400, "uNABLE TO Take the Avatar Iamge from the User");
   }
 
   //  Step6 After Getting the Cover Image pload it int the Cloudnary
   //   Here Aftr uploading to cloudinary it will give you the URL
   //  By using that url i will upload it oint o the DATABASE
+  console.log(AvatarImagePath);
+  console.log(CoverImagePath);
+  
+  
   const AvatarUrl = await UploadFiletoCloud(AvatarImagePath);
   const CoverUrl = await UploadFiletoCloud(CoverImagePath);
-
+ console.log(AvatarUrl);
+ console.log(AvatarUrl.url);
+ 
+ 
   if (!AvatarUrl) {
     throw new ApiError(400, "Avatar Iamge Not Uploaded");
   }
@@ -88,9 +95,9 @@ const register = asyncHandler(async (req, res, next) => {
   //  Now Comes The Most Important Part Making Entries into the Db
   const UserFile = await User.create({
     username,
-    email,
+    email:email.toLowerCase(),
     fullname,
-    password,
+    Password,
     avatar: AvatarUrl.url,
     //   Since i have Not Checked Whether Coverurl present here we will check whether CoverUrl is Present
     //  then only get the CoverUrl?.url
@@ -102,7 +109,7 @@ const register = asyncHandler(async (req, res, next) => {
   //  Except the Password Becuase if in response if the PASSWORD AND REFRESHTOKEN INCLUDED THEN IT WILL BE M
   //  MORE  TRUOBLE
   const UserDataToBeSent = await User.findById(UserFile._id).select(
-    "-password -RefreshToken",
+    "-Password -RefreshToken",
   );
   if (!UserDataToBeSent) {
     throw new ApiError(400, "No User Was Not Created");

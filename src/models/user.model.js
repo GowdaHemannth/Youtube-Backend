@@ -1,7 +1,7 @@
 import mongoose, { Schema } from "mongoose";
 
 import jwt from "jsonwebtoken";
-import bcrpyt from "bcrypt";
+import bcrypt from "bcrypt";
 //  Above Two Packages
 
 const UserSchema = new Schema(
@@ -63,20 +63,20 @@ const UserSchema = new Schema(
 // Before the Data Gets Stored inside the DB We Like to Some Operation
 
 //  These is One type of Middleware here we wont be Using the Async Function Beacase here we cant be using This
-UserSchema.pre("save", async function (next) {
+UserSchema.pre("save", async function () {
   //  Here we will be Using the isModified which tells particular Field is Modified or Not
   // Here if the Password is Not Modilef then only We use
   // isModified used to Chwwck whether the Given Field Modified or not
-  if (!this.isModified("Password")) return next();
-  this.Password = await bcrpyt.hash(this.Password, 10);
-  next();
+  if (!this.isModified("Password")) return 
+  this.Password = await bcrypt.hash(this.Password, 10);
+  
 });
 
 //  Here you Need to Check Whtehr the User Enterd the Correct Password or Not
 // Here When the USer Enterd Password Our Job is To Chkc whetehr the Given Pasword is Correct Or Not
 UserSchema.methods.isPasswordCorrect = async function (password) {
   //  it returns true if the value goes
-  return await bcrpyt.compare(password, this.Password);
+  return await bcrypt.compare(password, this.Password);
   //                           Here Password Are saved in bycroyt  tahts why we comapre the passwords
   //                           by comapring it with bcrpyt
 };
