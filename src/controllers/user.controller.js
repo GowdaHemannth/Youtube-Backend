@@ -4,6 +4,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { User } from "../models/user.model.js";
 import { UploadFiletoCloud } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
+//  These is The Controller for the Regiterion of the User 
 const register = asyncHandler(async (req, res, next) => {
   //    res.status(200).json({
   //         message:"Ok"
@@ -122,4 +123,47 @@ const register = asyncHandler(async (req, res, next) => {
   )
 });
 
+//  Now we will Create the Controllr for the Login of the USER 
+// What and All Do you do in the login tasks Lets 
+//  Step1 Take the UserName Password from the Form 
+//  Step2 Check Whther the Actually the UserName and Password Are their OR NOT  Like Are they Empty OR Not
+//  Step3 Validation Check Whther the Databse Has Any Username And Password 
+//  Based on that Passs the Api responseses
+
+//  TODAY WE ARE GONNA SEE HOW Do we send the cooike THING HERE
+const Login=asyncHandler(async(req,res)=>{
+  // Step 1 Take the rEQUIREMENST From THE bODY 
+  const {username,email,Password}=req.body
+  //  Step 2  IF THE USER HASNT ENTERD ANY Means 
+  if(!username || !email){
+    throw new ApiError(400,"ENTER USERNAME OR EMAIL ITS IS REQUIRED")
+  }
+
+  // Now Step Three Here We will Check for the validation like username Present or not or email is Present or not 
+  //  Below Syntax You can ACtually See but How to Enter Both Username And Email
+  // User.findOne({username})
+  //  Here You can ACTAULLY sEE How TO CHECK FOR THE DIFFERNT TYPES HERE 
+  const UserDataFromDB=await User.findOne({
+    $or:[{username},{email}]
+  })
+
+  //  Here You Can Actually tell its present or not 
+  if(!UserDataFromDB){
+    throw new ApiError(404,"User Doesnt Exist")
+  }
+  
+
+  //  if the User is Present then Check for the Password in the models we ahve already defined how to check passwords 
+  // THERE MIGHT BE QUESTION LIKE USERNAME CANT YOU JUST FIND THE PASSWORD 
+  //  ANSWER IS PASSWORD ARE STORED IN THE HASHED FORMAT SO WE CAN NOT FIND JUST BY FIND OEN HENCE WE AHVE SEPETARLY W
+  //  WRITTEN A METHOD TO DECRYPT THE PASSWORD AND TEHN STORE IT 
+  
+  //  Here There Might be Question Like Why cant i use User.method beavsue those and all mongodb   Methods
+
+  //  But Here we have  method Userdefined 
+  const Passwordvalidation=UserDataFromDB.isPasswordCorrect(Password)
+  if(!Passwordvalidation){
+    throw new ApiError(404,"PassWord IS INCORRECT")
+  }
+})
 export { register };
