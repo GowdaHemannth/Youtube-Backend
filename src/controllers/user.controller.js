@@ -4,13 +4,35 @@ import { ApiError } from "../utils/ApiError.js";
 import { User } from "../models/user.model.js";
 import { UploadFiletoCloud } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
-//  These is The Controller for the Regiterion of the User 
+
+// Here we will Create Seperate method JUST FOR THE GENERATION OF REFRESH TOKENS AND ACCESS TOKENS
+const generateAccessAndRefreshToken = async (userId) => {
+  try {
+    // Here in Order to Generate Tokens find the User
+    let UserInformation = await User.findById(userId);
+    // Now Lets Generate Access Tokens and RefreshTokens
+    const AccessTokens = UserInformation.GenerateAccessToken();
+    const Refreshtokens = UserInformation.GenerateRefreshToken();
+    //  Since we all Know Refresh TOKEN should be saved inside the DATABASE
+    UserInformation.RefreshToken = Refreshtokens;
+    // Here we Might Get Error Becuase While saving Things into DATABASE You Might Like Password
+    //  Password is Not Thier
+    await UserInformation.save({ validateBeforeSave: false });
+    return { AccessTokens, Refreshtokens };
+  } catch (error) {
+    throw new ApiError(
+      500,
+      "Something WenT WRONG WHILE GENERATING ACCESS TOKEN AND REFRESH TOKENS",
+    );
+  }
+};
+//  These is The Controller for the Regiterion of the User
 const register = asyncHandler(async (req, res, next) => {
   //    res.status(200).json({
   //         message:"Ok"
   //     })
   //  Here we will try to Register the User based on the  Given Data That User Provides us
-//  kguyu
+  //  kguyu
   //  Step 1 get the user Details like what and all we defined in the UsermodelSchema
   //  Step2 Validation Like user as not left any required field Empty
   //  Step3 Check whether the User Already Exists Or not
@@ -81,14 +103,12 @@ const register = asyncHandler(async (req, res, next) => {
   //  By using that url i will upload it oint o the DATABASE
   console.log(AvatarImagePath);
   console.log(CoverImagePath);
-  
-  
+
   const AvatarUrl = await UploadFiletoCloud(AvatarImagePath);
   const CoverUrl = await UploadFiletoCloud(CoverImagePath);
- console.log(AvatarUrl);
- console.log(AvatarUrl.url);
- 
- 
+  console.log(AvatarUrl);
+  console.log(AvatarUrl.url);
+
   if (!AvatarUrl) {
     throw new ApiError(400, "Avatar Iamge Not Uploaded");
   }
@@ -96,7 +116,7 @@ const register = asyncHandler(async (req, res, next) => {
   //  Now Comes The Most Important Part Making Entries into the Db
   const UserFile = await User.create({
     username,
-    email:email.toLowerCase(),
+    email: email.toLowerCase(),
     fullname,
     Password,
     avatar: AvatarUrl.url,
@@ -118,52 +138,82 @@ const register = asyncHandler(async (req, res, next) => {
 
   //   We have Created one Resopnse thing Called  APIRESPONSE Which Basiclay Helps us to Send the Data
 
-  return res.status(201).json(
-    new ApiResponse(200,UserDataToBeSent,"User registration Sunccfull")
-  )
+  return res
+    .status(201)
+    .json(
+      new ApiResponse(200, UserDataToBeSent, "User registration Sunccfull"),
+    );
 });
 
-//  Now we will Create the Controllr for the Login of the USER 
-// What and All Do you do in the login tasks Lets 
-//  Step1 Take the UserName Password from the Form 
+//  Now we will Create the Controllr for the Login of the USER
+// What and All Do you do in the login tasks Lets
+//  Step1 Take the UserName Password from the Form
 //  Step2 Check Whther the Actually the UserName and Password Are their OR NOT  Like Are they Empty OR Not
-//  Step3 Validation Check Whther the Databse Has Any Username And Password 
+//  Step3 Validation Check Whther the Databse Has Any Username And Password
 //  Based on that Passs the Api responseses
 
 //  TODAY WE ARE GONNA SEE HOW Do we send the cooike THING HERE
-const Login=asyncHandler(async(req,res)=>{
-  // Step 1 Take the rEQUIREMENST From THE bODY 
-  const {username,email,Password}=req.body
-  //  Step 2  IF THE USER HASNT ENTERD ANY Means 
-  if(!username || !email){
-    throw new ApiError(400,"ENTER USERNAME OR EMAIL ITS IS REQUIRED")
+const Login = asyncHandler(async (req, res) => {
+  // Step 1 Take the rEQUIREMENST From THE bODY
+  const { username, email, Password } = req.body;
+  //  Step 2  IF THE USER HASNT ENTERD ANY Means
+  if (!username || !email) {
+    throw new ApiError(400, "ENTER USERNAME OR EMAIL ITS IS REQUIRED");
   }
 
-  // Now Step Three Here We will Check for the validation like username Present or not or email is Present or not 
+  // Now Step Three Here We will Check for the validation like username Present or not or email is Present or not
   //  Below Syntax You can ACtually See but How to Enter Both Username And Email
   // User.findOne({username})
-  //  Here You can ACTAULLY sEE How TO CHECK FOR THE DIFFERNT TYPES HERE 
-  const UserDataFromDB=await User.findOne({
-    $or:[{username},{email}]
-  })
+  //  Here You can ACTAULLY sEE How TO CHECK FOR THE DIFFERNT TYPES HERE
+  //  These Logical Satemsnt Are Mu
+  const UserDataFromDB = await User.findOne({
+    $or: [{ username }, { email }],
+  });
 
-  //  Here You Can Actually tell its present or not 
-  if(!UserDataFromDB){
-    throw new ApiError(404,"User Doesnt Exist")
+  //  Here You Can Actually tell its present or not
+  if (!UserDataFromDB) {
+    throw new ApiError(404, "User Doesnt Exist");
   }
-  
 
-  //  if the User is Present then Check for the Password in the models we ahve already defined how to check passwords 
-  // THERE MIGHT BE QUESTION LIKE USERNAME CANT YOU JUST FIND THE PASSWORD 
+  //  if the User is Present then Check for the Password in the models we ahve already defined how to check passwords
+  // THERE MIGHT BE QUESTION LIKE USERNAME CANT YOU JUST FIND THE PASSWORD
   //  ANSWER IS PASSWORD ARE STORED IN THE HASHED FORMAT SO WE CAN NOT FIND JUST BY FIND OEN HENCE WE AHVE SEPETARLY W
-  //  WRITTEN A METHOD TO DECRYPT THE PASSWORD AND TEHN STORE IT 
-  
-  //  Here There Might be Question Like Why cant i use User.method beavsue those and all mongodb   Methods
+  //  WRITTEN A METHOD TO DECRYPT THE PASSWORD AND TEHN STORE IT
 
-  //  But Here we have  method Userdefined 
-  const Passwordvalidation=UserDataFromDB.isPasswordCorrect(Password)
-  if(!Passwordvalidation){
-    throw new ApiError(404,"PassWord IS INCORRECT")
+  //  Here There Might be Question Like Why cant i use User.method beavsue those and all mongodb   Methods
+  /// Here We Can not use the User.isPasswordCorrect thng Becuase isPassword is Not AN Inbuilt Function
+  //  But Here we have  method Userdefined
+  const Passwordvalidation = UserDataFromDB.isPasswordCorrect(Password);
+  if (!Passwordvalidation) {
+    throw new ApiError(404, "PassWord IS INCORRECT");
   }
-})
-export { register };
+
+  //  AS YOU CAN NOW WE WILL CALL BOTH THE ACCESSTOKEN AND REFRESHTOKENS THHINGS HERE
+  // here we learned how to Destructure and Get The Actuall Tokens Thats actaully Needed  
+    const {AccessTokens,Refreshtokens}=await generateAccessAndRefreshToken(UserDataFromDB._id)
+
+    //  NEXT STEP IS TO SEND THE DATA TO A COOKIE WHERE THE ACTUALL DATA IS STORED
+    //  here as you can the userFromDb Which we have taken is not updated 
+    //  in the sense it DOESNT HAVE ACCESS TOKEN AS WELL AS REFRESH TOKENS
+    //  for that once agian call the db
+    // UserDataFromDB Doesnt Have the Refresh Tokens As well as the Acess Tokens Hence In order to 
+    //   Get those We wILL cALL db One MORE TIME 
+    const UpdatedUserInfoFromDatabase=User.findById(UserDataFromDB._id).
+    select('- Password - RefreshToken')
+
+// After these Our task Is TO SEND THE OOKIES THROUGH THESE Through the cookies 
+//  Here we Have made Both the httpOnly and secure true So We can just 
+//  SEE THE COOKIE IN THE FRONTEND BUT MODIFICATION ONLY FROM THE SERVER
+const options={
+  httpOnly:true,
+  secure:true
+}
+
+// I HAVE sENT THE COOKIE TO BROWSER WHERE IT DTORES THE 
+return res
+.status(200)
+//  Cookie For the Access Tokens
+.cookie("AccessTokens",AccessTokens,options)
+
+});
+export { register,Login };

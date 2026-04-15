@@ -10,9 +10,10 @@ const router=Router()
 //  Here multer nothing its a middleware which accepts the File handling and stores temaporly and gives file path 
 // which then used for the uploading the file to the cloudinary 
 //  STEP3 HOW TO INJECT A MIDDLEWARE
-//  Middleware nothing but befoev accepting any filed jsut meet once so Here waht happens is 
-// Since register before it happens if files aviable then take up those
+//  Middleware nothing but befoev accepting any filed jsut meet once so Here wHat happens is 
+// Since register before it happens if files aviable then take up those Take uyp those Files
 router.route('/register').post(
+    
     upload.fields([
         {name:"avatar",
             maxCount:1
