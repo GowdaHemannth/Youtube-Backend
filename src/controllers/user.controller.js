@@ -214,6 +214,19 @@ return res
 .status(200)
 //  Cookie For the Access Tokens
 .cookie("AccessTokens",AccessTokens,options)
+//  Cookies For the Generate Tokens 
+.cookie("RefreshTokens",Refreshtokens,options)
+.json(
+  new ApiResponse(
+    200,{
+      user:UpdatedUserInfoFromDatabase,AccessTokens,Refreshtokens
+    },
+    "User Logged IN Successfully  "
+  )
+)
 
 });
+const LogoutUser=asyncHandler(async(req,res)=>{
+  
+})
 export { register,Login };
