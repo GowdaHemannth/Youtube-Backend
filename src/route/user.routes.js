@@ -1,7 +1,7 @@
 import { Router } from "express";
-import { register } from "../controllers/user.controller.js";
+import { Login, LogoutUser, register } from "../controllers/user.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
-
+import { VerifyJwt } from "../middlewares/auth.middleware.js";
 const router=Router()
 
 //  AS SOON AS THE /USER GOES TO URL IT WILL GIVE AUTHORITY TO THESEFILE THEN 
@@ -26,5 +26,15 @@ router.route('/register').post(
     register
 )
 
+
+//  Defining One More Router Here Like ITS PRETTY MUCH
+router.route('/Login').post(Login)
+
+
+//  Secured Routes Here Secured Routes in the Sense 
+//  WE NEED TO VERIFY IT BEFORE ITS BEGAN ITS WORK 
+//    You All Remmember We Used Next IN VerifyJwt Where 
+//  Becuase After Verification Here LogoutUser Should Also Run Right 
+router.route("/Logout").post( VerifyJwt,LogoutUser)
 // If you export it using the default then you can import using a
 export {router}

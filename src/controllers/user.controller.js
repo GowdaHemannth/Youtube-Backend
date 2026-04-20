@@ -213,6 +213,7 @@ const options={
 return res
 .status(200)
 //  Cookie For the Access Tokens
+//  These Optaions Are Better TO Keep Going 
 .cookie("AccessTokens",AccessTokens,options)
 //  Cookies For the Generate Tokens 
 .cookie("RefreshTokens",Refreshtokens,options)
@@ -226,7 +227,31 @@ return res
 )
 
 });
+//  Here we can Call One Logout Button 
+//  But The Problem is Like How do i get the USER_ID for the Logging Out Thing 
 const LogoutUser=asyncHandler(async(req,res)=>{
   
+  //  IN AUTH MIDDLE WARE we added User Thing in req 
+  //  Since We have User Access in the req
+  //  if we want we can do these in tow steps like First
+  //  HERE DO BOTH THE STEPS AT A TIME 
+ await User.findByIdAndUpdate(
+    //  these FOR FINDIG THE ID
+    req.user._id,
+    //  These  for Updating 
+    {
+         $set:{
+          RefreshToken:undefined
+         }
+    }
+  )
+  const options={
+  httpOnly:true,
+  secure:true
+}
+
+return res.status(200).clearCookie("AccessTokens",options)
+.clearCookie("RefreshTokens",options).json(new ApiResponse(200,{},"User LoggedOut"))
+
 })
-export { register,Login };
+export { register,Login ,LogoutUser};
