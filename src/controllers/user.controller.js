@@ -254,4 +254,26 @@ return res.status(200).clearCookie("AccessTokens",options)
 .clearCookie("RefreshTokens",options).json(new ApiResponse(200,{},"User LoggedOut"))
 
 })
+
+// Here we will write One Controller for the Password Correct OR not 
+const ChangePassword=asyncHandler(async(req,res)=>{
+  const {oldPassword,newPassword}=req.body;
+
+  //  Here we can save As Much Data we need in the particular Token 
+  const user=await User.findById(req.user?.id)
+
+  const confirmPassword=await user.isPasswordCorrect(oldPassword)
+  if(confirmPassword){
+    throw new ApiError(400,"Invalid Password")
+  }
+ 
+  // After Getting the password we need overWrite the Password Right Thtas the Main Intantion here 
+  user.Password=confirmPassword;
+  await user.save({validateBeforeSave:false});
+
+  return res.status(200).json(new ApiResponse(200,{},"Password Has been succefuult saved "))
+
+
+})
+
 export { register,Login ,LogoutUser};
