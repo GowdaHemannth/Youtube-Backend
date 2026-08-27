@@ -250,6 +250,22 @@ const LogoutUser=asyncHandler(async(req,res)=>{
   secure:true
 }
 
+const updateDetailas =asyncHandler(async(req,res)=>{
+  const{fullname,email}=req.body;
+ const user= await User.findByIdAndDelete(req.user?._id,
+    {
+      $set:{
+        fullname,
+        email
+      }
+    },
+    // Here this keyWord is Used to get the updated Value After Updating the Value
+    {new:true}
+
+    // Here this select helps in the getting the data 
+  ).select("-Password")
+   await user.save()
+})
 return res.status(200).clearCookie("AccessTokens",options)
 .clearCookie("RefreshTokens",options).json(new ApiResponse(200,{},"User LoggedOut"))
 
