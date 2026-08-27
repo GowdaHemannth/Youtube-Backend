@@ -266,6 +266,13 @@ const ChangePassword=asyncHandler(async(req,res)=>{
   if(confirmPassword){
     throw new ApiError(400,"Invalid Password")
   }
+ 
+  // After Getting the password we need overWrite the Password Right Thtas the Main Intantion here 
+  user.Password=confirmPassword;
+  await user.save({validateBeforeSave:false});
+
+  return res.status(200).json(new ApiResponse(200,{},"Password Has been succefuult saved "))
+
 
 })
 
